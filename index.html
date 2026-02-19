@@ -1466,6 +1466,25 @@
     if (lista.children.length > 1) btn.parentElement.remove();
   }
 
+  function guardarEnLocal(receta) {
+    try {
+      const guardadas = JSON.parse(localStorage.getItem('tps_recetas') || '[]');
+      guardadas.unshift(receta);
+      localStorage.setItem('tps_recetas', JSON.stringify(guardadas));
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  function cargarDeLocal() {
+    try {
+      return JSON.parse(localStorage.getItem('tps_recetas') || '[]');
+    } catch(e) {
+      return [];
+    }
+  }
+
   function publicarReceta() {
     const nombre = document.getElementById('f-nombre').value.trim();
     const desc = document.getElementById('f-desc').value.trim();
@@ -1494,11 +1513,12 @@
       resenas: []
     };
 
+    const guardado = guardarEnLocal(nuevaReceta);
     recetas.unshift(nuevaReceta);
     renderGrid(categoriaActual);
     cerrarFormulario();
     resetFormulario();
-    mostrarToast('🎉 ¡Receta publicada con éxito!');
+    mostrarToast(guardado ? '🎉 ¡Receta guardada para siempre!' : '🎉 ¡Receta publicada!');
     scrollToRecetas();
   }
 
@@ -1562,8 +1582,16 @@
   }
 
   // ── INIT ──
+  function iniciar() {
+    const guardadas = cargarDeLocal();
+    if (guardadas.length > 0) {
+      recetas = [...guardadas, ...recetas];
+      mostrarToast('✅ ' + guardadas.length + ' receta' + (guardadas.length !== 1 ? 's' : '') + ' cargada' + (guardadas.length !== 1 ? 's' : '') + ' de tu historial');
+    }
+    renderGrid('todas');
+  }
 
-  renderGrid('todas');
+  iniciar();
 </script>
 </body>
 </html>
